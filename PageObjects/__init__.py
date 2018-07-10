@@ -1,0 +1,1 @@
+from .naukri import Naukri
