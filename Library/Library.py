@@ -12,7 +12,6 @@ class Library(object):
 
     def __init__(self):
         self.binary_location = r"/usr/local/bin/chromedriver"
-        self.binary_location = r"C:/bin/chromedriver"
         self.naukri_po = None
 
     def __enter__(self):
