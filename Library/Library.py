@@ -58,7 +58,7 @@ class Library(object):
                 )
                 print os.getcwd()
                 self.driver.find_element(*self.naukri_po.input_upload_cv).send_keys(
-                    os.path.join(os.getcwd(), "Profile.docx"))
+                    os.path.join(os.getcwd(), "Resume.docx"))
                 print 'Done Successfully'
                 time.sleep(10)
                 updated_on = self.driver.find_element(*self.naukri_po.lbl_upload_date).text
