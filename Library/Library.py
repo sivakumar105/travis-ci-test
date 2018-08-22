@@ -1,5 +1,6 @@
 import os
 import time
+from datetime import datetime
 import re
 from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.common.action_chains import ActionChains
@@ -12,6 +13,7 @@ class Library(object):
 
     def __init__(self):
         self.binary_location = r"/usr/local/bin/chromedriver"
+        self.binary_location = r"C:\bin\chromedriver.exe"
         self.naukri_po = None
 
     def __enter__(self):
@@ -50,23 +52,44 @@ class Library(object):
         self.driver.find_element(*self.naukri_po.btn_edit_profile).click()
         print os.getcwd()
         value = 0.4
+        fu_counter, ur_counter = 1, 1
         while value <= 1:
             self.driver.execute_script("window.scrollTo(0, {}*document.body.scrollHeight);".format(value))
             try:
-                element = WebDriverWait(self.driver, 20).until(
+                WebDriverWait(self.driver, 20).until(
                     EC.presence_of_element_located(self.naukri_po.input_upload_cv)
                 )
-                print os.getcwd()
+            except Exception as e:
+                print e.message
+                print 'Finding Upload Resume Button: failed in %s attempt' % fu_counter
+                fu_counter += 1
+                value += 0.1
+                continue
+            print 'Upload Resume Button found successfully'
+            try:
+                time.sleep(10)
                 self.driver.find_element(*self.naukri_po.input_upload_cv).send_keys(
                     os.path.join(os.getcwd(), "Resume.docx"))
                 print 'Done Successfully'
-                time.sleep(10)
-                updated_on = self.driver.find_element(*self.naukri_po.lbl_upload_date).text
-                if updated_on:
-                    upload_date = re.search('Uploaded on (.*)', updated_on).group(1)
-                    print "Resume uploaded on :{}".format(upload_date)
-                break
             except Exception as e:
                 print e.message
+                print 'Uploading Resume: failed in %s attempt'% ur_counter
+                ur_counter += 1
                 value += 0.1
-        return upload_date
+                continue
+
+            time.sleep(10)
+            updated_on = self.driver.find_element(*self.naukri_po.lbl_upload_date).text
+            if updated_on:
+                upload_date = re.search('Uploaded on (.*)', updated_on).group(1)
+                print "Resume uploaded on :{}".format(upload_date)
+            break
+
+        # Finally Validating the upload date
+        naukri_date = datetime.strptime(upload_date, '%b %d, %Y')
+        system_date = datetime.now()
+        print 'Current System date :{}'.format(system_date)
+        difference_days = abs(naukri_date-system_date).days
+        print 'Difference in Days :{}'.format(difference_days)
+        status = False if difference_days > 2 else True
+        return status
